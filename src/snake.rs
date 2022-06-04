@@ -1,11 +1,27 @@
+use opengl_graphics::{GlGraphics, OpenGL};
+use piston::{Events, EventSettings, RenderArgs, RenderEvent, WindowSettings};
+use piston_window::{clear, color, PistonWindow};
 
 pub fn snake_game(){
-    extern crate piston_window;
 
-    use piston_window::*;
+    pub struct Game {
+        // game components
+        graphics:GlGraphics
+        // TODO add snake
+    }
 
+    impl Game{
+        // render game components
+        pub fn render(&mut self, args: &RenderArgs){
+            self.graphics.draw(args.viewport(), |_context, graphics| {
+                clear(color::NAVY, graphics);
+            // TODO render snake
+        });
+    }
 
-    // create window
+    }
+
+    // set it up
     let size = [640, 480];
     let title = "Snake";
     let mut window: PistonWindow = WindowSettings::new(title, size)
@@ -13,17 +29,17 @@ pub fn snake_game(){
         .build()
         .unwrap();
 
+    let opengl = OpenGL::V3_2;
 
-    while let Some(event) = window.next() {
-        window.draw_2d(&event, |context, graphics, _device| {
-            clear(color::NAVY, graphics);
+    let mut game = Game{
+        graphics:GlGraphics::new(opengl),
+    };
 
-
-            // create snake square
-            let rect = [0.0, 0.0, 20.0, 20.0];
-            rectangle(color::WHITE, rect,
-                      context.transform,
-                      graphics);
-        });
+    let mut events = Events::new(EventSettings::new());
+    while let Some(e) = events.next(&mut window){
+        if let Some(r) = e.render_args(){
+            game.render(&r)
+        }
     }
+
 }
