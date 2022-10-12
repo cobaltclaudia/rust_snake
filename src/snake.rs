@@ -1,66 +1,108 @@
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::{Events, EventSettings, RenderArgs, RenderEvent, WindowSettings};
-use piston_window::{clear, color, PistonWindow};
+use std::collections::LinkedList;
+use piston_window::{Context, G2d};
+use piston_window::types::Color;
 
-pub fn snake_game(){
+use crate::draw::draw_block;
 
-    pub struct Game {
-        // game components
-        graphics:GlGraphics,
-        snake: Snake
+const SNAKE_COLOR: Color = [0.00, 0.80, 0.00, 1.0];  // change RGB colors
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+impl Direction {
+    pub fn opposite(&self)->Direction{
+        match *self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
     }
+}
 
-    impl Game{
-        // render game components
-        pub fn render(&mut self, args: &RenderArgs){
-            self.graphics.draw(args.viewport(), |_context, graphics| { clear(color::NAVY, graphics)});
+#[derive(Debug, Clone)]
+struct Block {
+    x: i32,
+    y: i32,
+}
 
-            self.snake.render( &mut self.graphics, args);
+pub struct Snake {
+    direction: Direction,
+    body: LinkedList<Block>,
+    tail: Option<Block>,
+}
 
+impl Snake {
+    pub fn new(x: i32, y: i32) -> Snake {
+        let mut body: LinkedList<Block> = LinkedList::new();
+        // default snake length 3 blocks
+        body.push_back(Block{
+            x: x + 2,
+            y,
+        });body.push_back(Block{
+            x: x + 1,
+            y,
+        });body.push_back(Block{
+            x,
+            y,
+        });
+
+        // default moves to right
+        Snake {
+            direction: Direction::Right,
+            body,
+            tail: None,
         }
     }
 
-    // snake
-    pub struct Snake{
-        pos_x: i32,
-        pos_y: i32
-    }
-
-    impl Snake{
-        // render snake
-        fn render(&mut self, graphics: &mut GlGraphics, args: &RenderArgs){
-            let _red: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
-            let _square = graphics::rectangle::square(self.pos_x as f64,
-                                                     self.pos_y as f64, 20_f64);
-            graphics.draw(args.viewport(),|c,_graphics|{
-                let _transform = c.transform;
-
-                // TODO fix error here
-                //graphics::rectangle(_red, _square, _transform, graphics);
-            });
+    // renders snake
+    pub fn draw(&self, con: &Context, g: &mut G2d){
+        for block in &self.body {
+            draw_block(SNAKE_COLOR, block.x, block.y, con, g);
         }
     }
 
-    // set it up
-    let size = [640, 480];
-    let title = "Snake";
-    let mut window: PistonWindow = WindowSettings::new(title, size)
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+    pub fn head_position(&self) -> (i32, i32) {
+        let head_block = self.body.front().unwrap();
+        (head_block.x, head_block.y)
+    }
 
-    let opengl = OpenGL::V3_2;
-
-    let mut game = Game{
-        graphics:GlGraphics::new(opengl),
-        snake: Snake { pos_x:50, pos_y: 100 }
-    };
-
-    let mut events = Events::new(EventSettings::new());
-    while let Some(e) = events.next(&mut window){
-        if let Some(r) = e.render_args(){
-            game.render(&r);
+    pub fn move_forward(&mut self, dir: Option<Direction>){
+        match dir {
+            Some(d) => self.direction = d,
+            None => (),
         }
+        let (last_x, last_y): (i32, i32) = self.head_position();
+
+        let new_block = match self.direction {
+            Direction::Up => Block {
+                x: last_x,
+                y: last_y - 1,
+            },
+            Direction::Down => Block {
+                x: last_x,
+                y: last_y + 1,
+            },Direction::Left => Block {
+                x: last_x - 1,
+                y: last_y ,
+            },Direction::Right => Block {
+                x: last_x +1,
+                y: last_y ,
+            },
+        };
+        self.body.push_front(new_block);
+        let removed_block = self.body.pop_back().unwrap();
+        self.tail = Some(removed_block) ;
+    }
+
+
+    pub fn head_direction(&self) -> Direction {
+        self.direction
     }
 
 }
