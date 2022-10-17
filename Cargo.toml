@@ -1,0 +1,13 @@
+[package]
+name = "rust_snake"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.piston]
+git = "https://github.com/PistonDevelopers/piston"
+[dependencies.piston_window]
+git = "https://github.com/PistonDevelopers/piston_window"
+[dependencies.rand]
+git = "https://github.com/rust-random/rand"
+
