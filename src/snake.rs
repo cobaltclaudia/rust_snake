@@ -4,7 +4,7 @@ use piston_window::types::Color;
 
 use crate::draw::draw_block;
 
-const SNAKE_COLOR: Color = [0.00, 0.80, 0.00, 1.0];  // change RGB colors
+const SNAKE_COLOR: Color = [1.0, 1.0, 1.00, 0.8];  // change RGB colors
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum Direction {
@@ -125,14 +125,11 @@ impl Snake {
         self.body.push_back(blk);
     }
 
-    pub fn overlap_tail(&self, mut x:i32, mut y:i32) -> bool {
+    pub fn overlap_tail(&self, x:i32, y:i32) -> bool {
         let mut ch = 0;
         for block in &self.body{
-            // error with &&
-            if x == block.x {
-                if y == block.y {
+            if x == block.x && y == block.y {
                     return true;
-                }
             }
 
             ch += 1;
